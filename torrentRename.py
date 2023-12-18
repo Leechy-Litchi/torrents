@@ -65,7 +65,6 @@ def main():
                         filetype = classifier.classify()
                         if filetype:
                             conn.execute("insert or ignore into magnets values (?, ?, ?)",(name,filetype,magnet))
-                            conn.commit()
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
@@ -76,6 +75,7 @@ def main():
                 except:
                     pass
             break
+        conn.commit()
         time.sleep(10*60)
     # if len(os.listdir("."))>18:
     #     os.system("bash ./autoupdate.sh")
