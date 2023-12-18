@@ -53,6 +53,7 @@ def main():
     for i in os.listdir("patterns"):
         classifiers.append(Classifier(i))
 
+    insertlist = []
     while 1:
         for i,j,k in os.walk("temp"):
             if len(j)>0:
@@ -64,7 +65,7 @@ def main():
                     for classifier in classifiers:
                         filetype = classifier.classify()
                         if filetype:
-                            conn.execute("insert or ignore into magnets values (?, ?, ?)",(name,filetype,magnet))
+                            insertlist.append((name,filetype,magnet))
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
@@ -75,6 +76,7 @@ def main():
                 except:
                     pass
             break
+        conn.executemany("insert or ignore into magnets values (?, ?, ?)",insertlist)
         conn.commit()
         time.sleep(10*60)
     # if len(os.listdir("."))>18:
