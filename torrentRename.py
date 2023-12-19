@@ -29,9 +29,9 @@ def getMetadata(torrent):
         metadata = tp.parse_torrent_file(torrent)
         name = metadata['info']['name']
         if len(name)==0:
-            return
+            return None
         if type(name)==bytes:
-            return
+            return None
         magnet= 'magnet:?'\
             + 'xt=urn:btih:' + torrent.split("/")[-1].split(".")[0]\
             + '&dn=' + name
@@ -54,7 +54,7 @@ def main():
         classifiers.append(Classifier(i))
 
     insertlist = []
-    otherlist = []
+    # otherlist = []
     while 1:
         for i,j,k in os.walk("temp"):
             if len(j)>0:
@@ -67,12 +67,12 @@ def main():
                     for classifier in classifiers:
                         type_ = classifier.classify()
                         if type_!="":
-                            filetype = type_+" "
-                    if filetype!="":
+                            filetype += type_+" "
+                    if len(filetype)>0:
                         filetype = filetype[:-1]
                         insertlist.append((name,filetype,magnet))
-                    else:
-                        otherlist.append((name,"Other",magnet))
+                    # else:
+                    #     otherlist.append((name,"Other",magnet))
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
@@ -84,7 +84,7 @@ def main():
                     pass
             break
         conn.executemany("insert or ignore into magnets values (?, ?, ?)",insertlist)
-        conn.executemany("insert or ignore into magnets values (?, ?, ?)",otherlist)
+        # conn.executemany("insert or ignore into magnets values (?, ?, ?)",otherlist)
         conn.commit()
         time.sleep(10*60)
     # if len(os.listdir("."))>18:

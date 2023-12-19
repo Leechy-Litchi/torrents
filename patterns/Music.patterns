@@ -1,1 +1,1 @@
-.*(mp3|kbps|flac).*
+.*(mp3|kbps|flac|FLAC|Flac|MP3).*
