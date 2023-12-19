@@ -20,7 +20,7 @@ class Classifier:
             for pattern in patterns.readlines():
                 if self.compare(pattern):
                     return self.path.split(".")[0]
-        return None
+        return ""
 
 
 def getMetadata(torrent):
@@ -63,12 +63,16 @@ def main():
                 torrent = i+"/"+l
                 magnet = getMetadata(torrent)
                 if magnet:
+                    filetype = ""
                     for classifier in classifiers:
-                        filetype = classifier.classify()
-                        if filetype:
-                            insertlist.append((name,filetype,magnet))
-                        else:
-                            otherlist.append((name,"Other",magnet))
+                        type_ = classifier.classify()
+                        if type_!="":
+                            filetype = type_+" "
+                    if filetype!="":
+                        filetype = filetype[:-1]
+                        insertlist.append((name,filetype,magnet))
+                    else:
+                        otherlist.append((name,"Other",magnet))
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
