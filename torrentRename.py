@@ -68,7 +68,7 @@ def main():
                         if filetype:
                             insertlist.append((name,filetype,magnet))
                         else:
-                            otherlist.append((name,filetype,magnet))
+                            otherlist.append((name,"Other",magnet))
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
