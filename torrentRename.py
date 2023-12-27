@@ -22,20 +22,37 @@ class Classifier:
                     return self.path.split(".")[0]
         return ""
 
+def formatSize(length):
+    size=["B","KB","MB","GB","TB","PB"]
+    num = int(length)
+    for i in range(len(size)):
+        if num/1024>1:
+            num/=1024
+            continue
+        else:
+            num = str(num)[:6]+size[i]
+            return num
 
 def getMetadata(torrent):
     global name
     try:
         metadata = tp.parse_torrent_file(torrent)
         name = metadata['info']['name']
+        length = 0
+        for i in metadata['info']:
+                if "length"==i:
+                    length+=metadata['info'][i]
+                elif "files"==i:
+                    for j in metadata['info']['files']:
+                        length+=j['length']
         if len(name)==0:
             return None
         if type(name)==bytes:
             return None
         magnet= 'magnet:?'\
             + 'xt=urn:btih:' + torrent.split("/")[-1].split(".")[0]\
-            + '&dn=' + name
-            # + '&xl=' + str(metadata['info']['length'])
+            + '&dn=' + name \
+            + '&xl=' + str(length)
             # + '&tr=' + metadata['announce']\ 
     except tp.InvalidTorrentDataException:
         return None
@@ -46,7 +63,7 @@ def main():
     if os.path.exists("patterns")==False:
         os.mkdir("patterns")
     conn = sqlite3.connect("filelists.sqlite")
-    conn.execute("create table if not exists magnets (name text unique,type text,magnet text unique)")
+    conn.execute("create table if not exists magnets (name text unique,type text,magnet text unique,length text)")
 
     global magnet
     classifiers = []
@@ -70,21 +87,23 @@ def main():
                             filetype += type_+" "
                     if len(filetype)>0:
                         filetype = filetype[:-1]
-                        insertlist.append((name,filetype,magnet))
+                        length = magnet.split("&xl=")[1]
+                        length = formatSize(length)
+                        insertlist.append((name,filetype,magnet,length))
                     # else:
                     #     otherlist.append((name,"Other",magnet))
                         # res = conn.execute("select * from magnets")
                         # print(res.fetchall())
                         # conn.close()                        
-        for root,dirs,files in os.walk("temp"):
-            for dir in dirs:
-                try:
-                    shutil.rmtree("temp/"+dir)
-                except:
-                    pass
-            break
-        conn.executemany("insert or ignore into magnets values (?, ?, ?)",insertlist)
-        # conn.executemany("insert or ignore into magnets values (?, ?, ?)",otherlist)
+        # for root,dirs,files in os.walk("temp"):
+        #     for dir in dirs:
+        #         try:
+        #             shutil.rmtree("temp/"+dir)
+        #         except:
+        #             pass
+        #     break
+        conn.executemany("insert or ignore into magnets values (?, ?, ?, ?)",insertlist)
+        # conn.executemany("insert or ignore into magnets values (?, ?, ?,?)",otherlist)
         conn.commit()
         time.sleep(10*60)
     # if len(os.listdir("."))>18:
